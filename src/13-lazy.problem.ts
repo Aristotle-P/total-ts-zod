@@ -3,11 +3,18 @@
 import { expect, it } from "vitest";
 import { z } from "zod";
 
-const MenuItem = z.object({
+const BaseMenuItem = z.object({
   //             ^ 🕵️‍♂️
   link: z.string(),
   label: z.string(),
-  children: z.array(MenuItem).default([]),
+});
+
+type MenuItem = z.infer<typeof BaseMenuItem> & {
+  children: MenuItem[];
+};
+
+const menuItemSchema: z.ZodType<MenuItem> = BaseMenuItem.extend({
+  children: z.lazy(() => menuItemSchema.array()),
 });
 
 // TESTS
@@ -24,7 +31,7 @@ it("Should succeed when it encounters a correct structure", async () => {
       },
     ],
   };
-  expect(MenuItem.parse(menuItem)).toEqual(menuItem);
+  expect(menuItemSchema.parse(menuItem)).toEqual(menuItem);
 });
 
 it("Should error when it encounters an incorrect structure", async () => {
@@ -37,5 +44,5 @@ it("Should error when it encounters an incorrect structure", async () => {
       },
     ],
   };
-  expect(() => MenuItem.parse(menuItem)).toThrowError();
+  expect(() => menuItemSchema.parse(menuItem)).toThrowError();
 });

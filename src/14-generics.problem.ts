@@ -4,11 +4,13 @@ import { it } from "vitest";
 import { z } from "zod";
 import { Equal, Expect } from "./helpers/type-utils";
 
-const genericFetch = (url: string, schema: z.ZodSchema) => {
+const genericFetch = async (url: string, schema: z.ZodSchema): Promise<{name: string}> => {
   //                 ^ 🕵️‍♂️
-  return fetch(url)
-    .then((res) => res.json())
-    .then((result) => schema.parse(result));
+    const res = await fetch(url);
+    const data = await res.json();
+    const result = schema.parse(data);
+    console.log(result);
+    return result;
 };
 
 // TESTS
